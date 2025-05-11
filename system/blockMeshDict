@@ -5,27 +5,31 @@ convertToMeters 1;
 innerRadius     1.5;    // Inner radius (m)
 outerRadius     1.8;    // Outer radius (m)
 depth           0.15;   // Vertical depth of the flume (m)
-cosAngle        0.866;  // cos(30°)
-sinAngle        0.5;    // sin(30°)
+angleDegrees    30;
+cosAngle        #eval{ cos(radians($angleDegrees)) };  // cos(30°)
+sinAngle        #eval{ sin(radians($angleDegrees)) };  // sin(30°)
+midAngleDegrees 15;
+midcosAngle     #eval{ cos(radians($midAngleDegrees)) }; // cos(15°)
+midsinAngle     #eval{ sin(radians($midAngleDegrees)) }; // sin(15°)
 
 vertices
 (
     ($innerRadius 0 0)                // Point 0: Inner front bottom (radial, depth=0, angular=0)
     ($outerRadius 0 0)                // Point 1: Outer front bottom
-    ($innerRadius*cosAngle 0 $innerRadius*sinAngle)  // Point 2: Inner back bottom (radial, depth=0, angular=30°)
-    ($outerRadius*cosAngle 0 $outerRadius*sinAngle)  // Point 3: Outer back bottom
+    ($innerRadius*$cosAngle 0 $innerRadius*$sinAngle)  // Point 2: Inner back bottom (radial, depth=0, angular=30°)
+    ($outerRadius*$cosAngle 0 $outerRadius*$sinAngle)  // Point 3: Outer back bottom
     ($innerRadius $depth 0)           // Point 4: Inner front top (radial, depth=0.15, angular=0)
     ($outerRadius $depth 0)           // Point 5: Outer front top
-    ($innerRadius*cosAngle $depth $innerRadius*sinAngle)  // Point 6: Inner back top
-    ($outerRadius*cosAngle $depth $outerRadius*sinAngle)  // Point 7: Outer back top
+    ($innerRadius*$cosAngle $depth $innerRadius*$sinAngle)  // Point 6: Inner back top
+    ($outerRadius*$cosAngle $depth $outerRadius*$sinAngle)  // Point 7: Outer back top
 );
 
 edges
 (
-    arc 0 2 (0 0 0)                // Inner arc (bottom, in x-z plane)
-    arc 1 3 (0 0 0)                // Outer arc (bottom, in x-z plane)
-    arc 4 6 (0 $depth 0)          // Inner arc (top, in x-z plane at y = 0.15)
-    arc 5 7 (0 $depth 0)          // Outer arc (top, in x-z plane at y = 0.15)
+    arc 0 2 ($innerRadius*$midcosAngle 0 $innerRadius*$midsinAngle)                // Inner arc (bottom, in x-z plane)
+    arc 1 3 ($outerRadius*$midcosAngle 0 $outerRadius*$midsinAngle)                // Outer arc (bottom, in x-z plane)
+    arc 4 6 ($innerRadius*$midcosAngle $depth $innerRadius*$midsinAngle)          // Inner arc (top, in x-z plane at y = 0.15)
+    arc 5 7 ($outerRadius*$midcosAngle $depth $outerRadius*$midsinAngle)          // Outer arc (top, in x-z plane at y = 0.15)
 );
 
 blocks
