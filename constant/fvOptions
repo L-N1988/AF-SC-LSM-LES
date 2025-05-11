@@ -16,13 +16,54 @@ FoamFile
 
 momentumSource
 {
-    type            meanVelocityForce;
+    type            scalarCodedSource;
+    active          true;
+    selectionMode   cellZone;      // Apply to a specific cell zone (e.g., "topWall")
+    cellZone        topWall;
 
-    selectionMode   all;
+    sourceTimeCoeffs
+    {
+        startTime       0;
+        endTime         1e6;
+    }
 
-    fields          (U);
-    Ubar            (0.1335 0 0);
+    scalarCodedSourceCoeffs
+    {
+        fieldNames      (U);       // Apply to velocity field
+        codeInclude
+        #{
+            #include "fvCFD.H"
+        #};
+
+        codeCorrect
+        #{
+            // Define angular velocity (rad/s)
+            const scalar omega = 1.5;  // Adjust based on desired shear rate
+
+            // Loop over cells in the "topWall" zone
+            forAll(cells, i)
+            {
+                label celli = cells[i];
+                vector& Ucell = U[celli];
+
+                // Get cell coordinates
+                const vector& coord = mesh.C()[celli];
+
+                // Compute radial distance from origin (assuming 2D radial symmetry)
+                scalar r = mag(vector(coord.x(), coord.y(), 0));  // Radial distance
+
+                // Desired tangential velocity: u_θ = omega * r
+                vector desiredVelocity = vector(-omega * coord.y(), omega * coord.x(), 0);  // 2D rotation
+
+                // Compute momentum source term (proportional to velocity difference)
+                scalar rho = 1.0;  // Assume density = 1 for incompressible flow
+                vector momentumSource = rho * (desiredVelocity - Ucell) * 100;  // Damping factor (adjust as needed)
+
+                // Apply source term to momentum equation
+                eqn.source() -= momentumSource * mesh.V()[celli];
+            }
+        #};
+    }
 }
-
 
 // ************************************************************************* //

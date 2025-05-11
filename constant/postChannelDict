@@ -22,7 +22,7 @@ component       y;
 
 // Is the mesh symmetric? If so average(symmetric fields) or
 // subtract(asymmetric) contributions from both halves
-symmetric       true;
+symmetric       false;
 
 
 // ************************************************************************* //
