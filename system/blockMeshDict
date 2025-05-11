@@ -1,0 +1,82 @@
+/* blockMeshDict for a 30-degree annular flume sector with depth in y-direction */
+// vertical direction along y axis
+convertToMeters 1;
+
+innerRadius     1.5;    // Inner radius (m)
+outerRadius     1.8;    // Outer radius (m)
+depth           0.15;   // Vertical depth of the flume (m)
+cosAngle        0.866;  // cos(30°)
+sinAngle        0.5;    // sin(30°)
+
+vertices
+(
+    ($innerRadius 0 0)                // Point 0: Inner front bottom (radial, depth=0, angular=0)
+    ($outerRadius 0 0)                // Point 1: Outer front bottom
+    ($innerRadius*cosAngle 0 $innerRadius*sinAngle)  // Point 2: Inner back bottom (radial, depth=0, angular=30°)
+    ($outerRadius*cosAngle 0 $outerRadius*sinAngle)  // Point 3: Outer back bottom
+    ($innerRadius $depth 0)           // Point 4: Inner front top (radial, depth=0.15, angular=0)
+    ($outerRadius $depth 0)           // Point 5: Outer front top
+    ($innerRadius*cosAngle $depth $innerRadius*sinAngle)  // Point 6: Inner back top
+    ($outerRadius*cosAngle $depth $outerRadius*sinAngle)  // Point 7: Outer back top
+);
+
+edges
+(
+    arc 0 2 (0 0 0)                // Inner arc (bottom, in x-z plane)
+    arc 1 3 (0 0 0)                // Outer arc (bottom, in x-z plane)
+    arc 4 6 (0 $depth 0)          // Inner arc (top, in x-z plane at y = 0.15)
+    arc 5 7 (0 $depth 0)          // Outer arc (top, in x-z plane at y = 0.15)
+);
+
+blocks
+(
+    hex (0 1 3 2 4 5 7 6) (20 5 10) simpleGrading (1 1 1)
+);
+
+boundary
+(
+    innerWall
+    {
+        type wall;
+        faces
+        (
+            (0 4 6 2)
+        );
+    }
+    outerWall
+    {
+        type wall;
+        faces
+        (
+            (1 3 7 5)
+        );
+    }
+    bottomWall
+    {
+        type wall;
+        faces
+        (
+            (0 2 3 1)
+        );
+    }
+    topWall
+    {
+        type wall;
+        faces
+        (
+            (4 5 7 6)
+        );
+    }
+    inlet
+    {
+        type            cyclic;
+        neighbourPatch  outlet;
+        faces           ((0 1 5 4));
+    }
+    outlet
+    {
+        type            cyclic;
+        neighbourPatch  inlet;
+        faces           ((2 6 7 3));
+    }
+);
