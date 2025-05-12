@@ -15,58 +15,39 @@ scale 1;
 innerRadius     1.5;    // Inner radius (m)
 outerRadius     1.8;    // Outer radius (m)
 depth           0.15;   // Vertical depth of the flume (m)
-angleDegrees    30;
+angleDegrees    15;
 cosAngle        #eval{ cos(degToRad($angleDegrees)) };  // cos(30°)
 sinAngle        #eval{ sin(degToRad($angleDegrees)) };  // sin(30°)
-midAngleDegrees 15;
-midcosAngle     #eval{ cos(degToRad($midAngleDegrees)) }; // cos(15°)
-midsinAngle     #eval{ sin(degToRad($midAngleDegrees)) }; // sin(15°)
 
-// Precompute vertex coordinates
-innerX_backBottom  #eval{ $innerRadius * $cosAngle };  // x-coordinate of Point 2
-innerZ_backBottom  #eval{ $innerRadius * $sinAngle };  // z-coordinate of Point 2
-outerX_backBottom  #eval{ $outerRadius * $cosAngle };  // x-coordinate of Point 3
-outerZ_backBottom  #eval{ $outerRadius * $sinAngle };  // z-coordinate of Point 3
-
-innerX_backTop     #eval{ $innerRadius * $cosAngle };  // x-coordinate of Point 6
-innerZ_backTop     #eval{ $innerRadius * $sinAngle };  // z-coordinate of Point 6
-outerX_backTop     #eval{ $outerRadius * $cosAngle };  // x-coordinate of Point 7
-outerZ_backTop     #eval{ $outerRadius * $sinAngle };  // z-coordinate of Point 7
-
-// Precompute arc midpoint coordinates
-innerArcMidX_bottom  #eval{ $innerRadius * $midcosAngle };  // x-coordinate for inner arc (bottom)
-innerArcMidZ_bottom  #eval{ $innerRadius * $midsinAngle };  // z-coordinate for inner arc (bottom)
-outerArcMidX_bottom  #eval{ $outerRadius * $midcosAngle };  // x-coordinate for outer arc (bottom)
-outerArcMidZ_bottom  #eval{ $outerRadius * $midsinAngle };  // z-coordinate for outer arc (bottom)
-
-innerArcMidX_top     #eval{ $innerRadius * $midcosAngle };  // x-coordinate for inner arc (top)
-innerArcMidZ_top     #eval{ $innerRadius * $midsinAngle };  // z-coordinate for inner arc (top)
-outerArcMidX_top     #eval{ $outerRadius * $midcosAngle };  // x-coordinate for outer arc (top)
-outerArcMidZ_top     #eval{ $outerRadius * $midsinAngle };  // z-coordinate for outer arc (top)
+// Precompute vertex coordinates - swapped x <-> z
+innerZ  #eval{ $innerRadius * $cosAngle };  // z-coordinate of Point 2
+innerX  #eval{ $innerRadius * $sinAngle };  // x-coordinate of Point 2
+outerZ  #eval{ $outerRadius * $cosAngle };  // z-coordinate of Point 3
+outerX  #eval{ $outerRadius * $sinAngle };  // x-coordinate of Point 3
 
 vertices
 (
-    ($innerRadius 0 0)                // Point 0: Inner front bottom
-    ($outerRadius 0 0)                // Point 1: Outer front bottom
-    ($innerX_backBottom 0 $innerZ_backBottom)  // Point 2: Inner back bottom
-    ($outerX_backBottom 0 $outerZ_backBottom)  // Point 3: Outer back bottom
-    ($innerRadius $depth 0)           // Point 4: Inner front top
-    ($outerRadius $depth 0)           // Point 5: Outer front top
-    ($innerX_backTop $depth $innerZ_backTop)    // Point 6: Inner back top
-    ($outerX_backTop $depth $outerZ_backTop)    // Point 7: Outer back top
+    (-$innerX 0 $innerZ)  // Point 0: Inner front bottom
+    (-$outerX 0 $outerZ)  // Point 1: Outer front bottom
+    ($innerX 0 $innerZ)  // Point 2: Inner front bottom
+    ($outerX 0 $outerZ)  // Point 3: Outer front bottom
+    (-$innerX $depth $innerZ)  // Point 4: Inner front bottom
+    (-$outerX $depth $outerZ)  // Point 5: Outer front bottom
+    ($innerX $depth $innerZ)  // Point 6: Inner front bottom
+    ($outerX $depth $outerZ)  // Point 7: Outer front bottom
 );
 
 edges
 (
-    arc 0 2 ($innerArcMidX_bottom 0 $innerArcMidZ_bottom)      // Inner arc (bottom, x-z plane)
-    arc 1 3 ($outerArcMidX_bottom 0 $outerArcMidZ_bottom)      // Outer arc (bottom, x-z plane)
-    arc 4 6 ($innerArcMidX_top $depth $innerArcMidZ_top)       // Inner arc (top, x-z plane at y = 0.15)
-    arc 5 7 ($outerArcMidX_top $depth $outerArcMidZ_top)       // Outer arc (top, x-z plane at y = 0.15)
+    arc 0 2 (0 0 $innerRadius)      // Inner arc (bottom, x-z plane)
+    arc 1 3 (0 0 $outerRadius)      // Outer arc (bottom, x-z plane)
+    arc 4 6 (0 $depth $innerRadius)       // Inner arc (top, x-z plane at y = 0.15)
+    arc 5 7 (0 $depth $outerRadius)       // Outer arc (top, x-z plane at y = 0.15)
 );
 
 blocks
 (
-    hex (0 1 5 4 2 3 7 6) (20 5 10) simpleGrading (1 1 1)
+    hex (0 2 6 4 1 3 7 5) (20 5 10) simpleGrading (1 1 1)
 );
 
 boundary
