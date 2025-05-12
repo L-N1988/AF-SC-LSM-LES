@@ -6,7 +6,7 @@ cd "${0%/*}" || exit                                # Run from this directory
 # settings
 
     # flag to enable computations in parallel mode
-    parallel=true
+    parallel=false
 
 
 #------------------------------------------------------------------------------
