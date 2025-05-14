@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
+import scipy.interpolate as interp
 
 # Base directory
 base_dir = "./postProcessing/velocityPlaneX0"
@@ -46,14 +46,20 @@ for time_dir in time_dirs:
     Uy = data[:, 4]
     Uz = data[:, 5]
 
-    # Assume y and z form a regular grid
-    unique_y = np.unique(y)
-    unique_z = np.unique(z)
+    # Interpolate over 2d mesh
+    interpolatorUx = interp.CloughTocher2DInterpolator(data[:, 1:3], Ux)
+    interpolatorUy = interp.CloughTocher2DInterpolator(data[:, 1:3], Uy)
+    interpolatorUz = interp.CloughTocher2DInterpolator(data[:, 1:3], Uz)
 
-    # Reshape U fields to match the grid
-    Ux_grid = Ux.reshape(len(unique_y), len(unique_z))
-    Uy_grid = Uy.reshape(len(unique_y), len(unique_z))
-    Uz_grid = Uz.reshape(len(unique_y), len(unique_z))
+    # go linearly in the y grid and z grid
+    yline = np.linspace(min(y), may(y), len(np.unique(y)))
+    zline = np.linspace(min(z), maz(z), len(np.unique(z)))
+    # construct 2d grid from these
+    xgrid,ygrid = np.meshgrid(xline, yline)
+    # interpolate z data; same shape as xgrid and ygrid
+    Ux_grid = interpolatorUx(xgrid, ygrid)
+    Uy_grid = interpolatorUy(xgrid, ygrid)
+    Uz_grid = interpolatorUz(xgrid, ygrid)
 
     output_folder = 'centerPlaneU'
     # Plotting function
@@ -70,9 +76,7 @@ for time_dir in time_dirs:
         plt.close()
 
     # Generate and save plots
-    plot_and_save(Ux_grid, 'U_x', 'Ux{time_dir}.png')
-    plot_and_save(Uy_grid, 'U_y', 'Uy{time_dir}.png')
-    plot_and_save(Uz_grid, 'U_z', 'Uz{time_dir}.png')
+    plot_and_save(Ux_grid, 'U_x', f"Ux_'{time_dir}'.png")
+    plot_and_save(Uy_grid, 'U_y', f"Uy_'{time_dir}'.png")
+    plot_and_save(Uz_grid, 'U_z', f"Uz_'{time_dir}'.png")
     print(f"Plots saved in folder '{output_folder}'")
-    print(f"Error reading {time_dir}: {e}")
-

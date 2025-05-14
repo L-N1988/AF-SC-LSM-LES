@@ -56,7 +56,7 @@ functions
         writeControl    timeStep;
         writeInterval   1;  // Every time step
 
-        surfaceFormat   raw;  // or raw, foam, etc.
+        surfaceFormat   raw;  // vtk or raw, foam, etc.
         fields   (U);
 
         surfaces
