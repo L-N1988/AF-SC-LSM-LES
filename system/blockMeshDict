@@ -25,14 +25,19 @@ innerX  #eval{ $innerRadius * $sinAngle };  // x-coordinate of Point 2
 outerZ  #eval{ $outerRadius * $cosAngle };  // z-coordinate of Point 3
 outerX  #eval{ $outerRadius * $sinAngle };  // x-coordinate of Point 3
 
+neginnerZ  #eval{ -1 * $innerRadius * $cosAngle };  // z-coordinate of Point 2
+neginnerX  #eval{ -1 * $innerRadius * $sinAngle };  // x-coordinate of Point 2
+negouterZ  #eval{ -1 * $outerRadius * $cosAngle };  // z-coordinate of Point 3
+negouterX  #eval{ -1 * $outerRadius * $sinAngle };  // x-coordinate of Point 3
+
 vertices
 (
-    (-$innerX 0 $innerZ)      // Point 0: Inner front bottom
-    (-$outerX 0 $outerZ)      // Point 1: Outer front bottom
+    ($neginnerX 0 $innerZ)      // Point 0: Inner front bottom
+    ($negouterX 0 $outerZ)      // Point 1: Outer front bottom
     ($innerX 0 $innerZ)       // Point 2: Inner front bottom
     ($outerX 0 $outerZ)       // Point 3: Outer front bottom
-    (-$innerX $depth $innerZ) // Point 4: Inner front bottom
-    (-$outerX $depth $outerZ) // Point 5: Outer front bottom
+    ($neginnerX $depth $innerZ) // Point 4: Inner front bottom
+    ($negouterX $depth $outerZ) // Point 5: Outer front bottom
     ($innerX $depth $innerZ)  // Point 6: Inner front bottom
     ($outerX $depth $outerZ)  // Point 7: Outer front bottom
 );

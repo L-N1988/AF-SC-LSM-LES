@@ -44,5 +44,38 @@ timePrecision   6;
 
 runTimeModifiable true;
 
+functions
+{
+    velocityPlaneX0
+    {
+        type            surfaces;
+        libs ("libsampling.so");
+        enabled         true;
 
+        // Use writeControl instead of outputControl
+        writeControl    timeStep;
+        writeInterval   1;  // Every time step
+
+        surfaceFormat   raw;  // or raw, foam, etc.
+        fields   (U);
+
+        surfaces
+        {
+            x0Plane
+            {
+                type            cuttingPlane;
+                planeType       planeEquation;
+                planeEquationDict
+                {
+                    a  1; // x=0 plane
+                    b  0;
+                    c  0; // to create plane with normal towards +z direction ...
+                    d  0; // ... at coordinate: z = 2
+                }
+            }
+        };
+
+        interpolate     true;
+    }
+}
 // ************************************************************************* //
