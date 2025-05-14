@@ -24,7 +24,7 @@ stopAt          endTime;
 
 endTime         600;
 
-deltaT           0.2; // Large time step for after hot start case initial conditions
+deltaT           0.01; // Large time step for after hot start case initial conditions
 
 writeControl    timeStep;
 

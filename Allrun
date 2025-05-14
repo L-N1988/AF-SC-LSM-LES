@@ -18,7 +18,7 @@ then
 
     runApplication blockMesh
 
-    runApplication renumberMesh -overwrite -constant
+    # runApplication renumberMesh -overwrite -constant
 
     runApplication checkMesh -allTopology -allGeometry -constant
 
@@ -39,7 +39,7 @@ else
 
 fi
 
-runApplication postChannel
+# runApplication postChannel
 
 
 #------------------------------------------------------------------------------
