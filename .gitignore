@@ -8,3 +8,6 @@ postProcessing/
 *.foam
 log.*
 *.log
+dataProcessing/centerPlaneU/
+dataProcessing/velocityPlaneX0/
+*.mat
