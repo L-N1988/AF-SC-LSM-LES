@@ -14,24 +14,28 @@ center_x = x_unique(round(length(x_unique)/2), 1);
 center_y = y_unique(round(length(y_unique)/2), 1);
 center_z = z_unique(round(length(z_unique)/2), 1);
 % [velocity at point, time]
-us = squeeze(Fields(:, 4, :));
-vs = squeeze(Fields(:, 5, :));
-ws = squeeze(Fields(:, 6, :));
+Nframe = 30000; % number of frames for fully developed flow
+us = squeeze(Fields(:, 4, end-Nframe+1:end));
+vs = squeeze(Fields(:, 5, end-Nframe+1:end));
+ws = squeeze(Fields(:, 6, end-Nframe+1:end));
 
 %% Interpolate velocity field to get structured grid data
 
 % Create interpolation mesh
-[Zq, Yq] = meshgrid(linspace(min(z_unique), max(z_unique), length(z_unique)*10), ...
-    linspace(min(y_unique), max(y_unique), length(y_unique)*20));
+[Zq, Yq] = meshgrid(linspace(min(z_unique), max(z_unique), length(z_unique)), ...
+    linspace(min(y_unique), max(y_unique), length(y_unique)*10));
 
-uq = zeros([size(Zq), length(Ts)]);
-vq = zeros([size(Zq), length(Ts)]);
-wq = zeros([size(Zq), length(Ts)]);
+uq = zeros([size(Zq), Nframe]);
+vq = zeros([size(Zq), Nframe]);
+wq = zeros([size(Zq), Nframe]);
 
-for i = 1:length(Ts)
-    Fuq = scatteredInterpolant(Zs(:, 1), Ys(:, 1), us(:, i), 'linear');
-    Fvq = scatteredInterpolant(Zs(:, 1), Ys(:, 1), vs(:, i), 'linear');
-    Fwq = scatteredInterpolant(Zs(:, 1), Ys(:, 1), ws(:, i), 'linear');
+% reduce broadcast overhead
+Z = Zs(:, 1);
+Y = Ys(:, 1);
+parfor i = 1:Nframe
+    Fuq = scatteredInterpolant(Z, Y, us(:, i), 'linear');
+    Fvq = scatteredInterpolant(Z, Y, vs(:, i), 'linear');
+    Fwq = scatteredInterpolant(Z, Y, ws(:, i), 'linear');
     uq(:, :, i) = Fuq(Zq, Yq);
     vq(:, :, i) = Fvq(Zq, Yq);
     wq(:, :, i) = Fwq(Zq, Yq);
@@ -77,6 +81,7 @@ TKE = 0.5 * (uu_t + vv_t + ww_t); % Turbulent kinetic energy
 % Compute root mean square (RMS) values for turbulence strength
 u_rms = sqrt(uu_t); % RMS of u
 v_rms = sqrt(vv_t); % RMS of v
+w_rms = sqrt(ww_t); % RMS of w
 
 % Compute double-averaged second moments (spatial average in spanwise z-direction)
 uv_xt  = mean(uv_t, 2); % u'v'
@@ -85,45 +90,47 @@ vv_xt  = mean(vv_t, 2); % v'v'
 
 %% Plot central line profiles
 figure();
-scatter(U_t(:, round(length(U_t)/ 2)), Yq(:, 1), 10, 'b', 'filled');
-hold on;
-scatter(V_t(:, round(length(V_t)/ 2)), Yq(:, 1), 10, 'r', 'filled');
-scatter(W_t(:, round(length(W_t)/ 2)), Yq(:, 1), 10, 'g', 'filled');
-xlabel('Velocity (m/s)');
-ylabel('Y (m)');
-legend('U', 'V', 'W');
 title('Central line velocity profiles');
-hold off;
+subplot(1, 3, 1);
+scatter(U_t(:, round(size(U_t, 2)/ 2)), Yq(:, 1), 20, 'b', 'filled');
+xlabel('U (m/s)');
+ylabel('Y (m)');
+subplot(1, 3, 2);
+scatter(V_t(:, round(size(V_t, 2)/ 2)), Yq(:, 1), 20, 'r', 'filled');
+xlabel('V (m/s)');
+subplot(1, 3, 3);
+scatter(W_t(:, round(size(W_t, 2)/ 2)), Yq(:, 1), 20, 'g', 'filled');
+xlabel('W (m/s)');
 saveas(gcf, 'uvw_central_line_profiles.png');
 
 figure();
-scatter(u_rms(:, round(length(u_rms)/ 2)), Yq(:, 1), 10, 'b', 'filled');
+scatter(u_rms(:, round(size(u_rms, 2)/ 2)), Yq(:, 1), 20, 'b', 'filled');
 hold on;
-scatter(v_rms(:, round(length(v_rms)/ 2)), Yq(:, 1), 10, 'r', 'filled');
-scatter(w_rms(:, round(length(w_rms)/ 2)), Yq(:, 1), 10, 'g', 'filled');
+scatter(v_rms(:, round(size(v_rms, 2)/ 2)), Yq(:, 1), 20, 'r', 'filled');
+scatter(w_rms(:, round(size(w_rms, 2)/ 2)), Yq(:, 1), 20, 'g', 'filled');
 xlabel('Turbulence intensity (m/s)');
 ylabel('Y (m)');
-legend('u_rms', 'v_rms');
+legend('u_rms', 'v_rms', 'w_rms');
 title('Central line turbulence intensity profiles');
 hold off;
 saveas(gcf, 'rms_central_line_profiles.png');
 
 figure();
-scatter(uv_t(:, round(length(uv_t)/ 2)), Yq(:, 1), 10, 'b', 'filled');
+scatter(uv_t(:, round(size(uv_t, 2)/ 2)), Yq(:, 1), 20, 'b', 'filled');
 hold on;
-scatter(uw_t(:, round(length(uu_t)/ 2)), Yq(:, 1), 10, 'r', 'filled');
-scatter(vw_t(:, round(length(vv_t)/ 2)), Yq(:, 1), 10, 'g', 'filled');
+scatter(uw_t(:, round(size(uu_t, 2)/ 2)), Yq(:, 1), 20, 'r', 'filled');
+scatter(vw_t(:, round(size(vv_t, 2)/ 2)), Yq(:, 1), 20, 'g', 'filled');
 xlabel('Tensor (m^2/s^2)');
 ylabel('Y (m)');
-lengend('uv_xt', 'uw_xt', 'vw_xt');
+legend('uv_xt', 'uw_xt', 'vw_xt');
 title('Central line stress tensor profiles');
 hold off;
 saveas(gcf, 'tensor_central_line_profiles.png');
 
 %% Plot 2D vector fields in Y-Z plane
-plot_and_save(Ubar, '$\overline{U}$', 'Ux_2d.png', Yq, Zq, '.');
-plot_and_save(Vbar, '$\overline{V}$', 'Uy_2d.png', Yq, Zq, '.');
-plot_and_save(Wbar, '$\overline{W}$', 'Uz_2d.png', Yq, Zq, '.');
+plot_and_save(U_t, '$\overline{U}$', 'Ux_2d.png', Yq, Zq, '.');
+plot_and_save(V_t, '$\overline{V}$', 'Uy_2d.png', Yq, Zq, '.');
+plot_and_save(W_t, '$\overline{W}$', 'Uz_2d.png', Yq, Zq, '.');
 plot_and_save(u_rms, '$u_{rms}$', 'u_rms_2d.png', Yq, Zq, '.');
 plot_and_save(v_rms, '$v_{rms}$', 'v_rms_2d.png', Yq, Zq, '.');
 plot_and_save(w_rms, '$w_{rms}$', 'w_rms_2d.png', Yq, Zq, '.');
@@ -143,13 +150,11 @@ xlabel('Y');
 ylabel('Z');
 title('2D Vector Field');
 hold off;
-saveas(figur, 'vector_field.png');
+saveas(figur, 'VW_vector_field.png');
 
 %% Save internal variables
 % Save statistical results to files
-Y = Yq(:, 1);
-X = Zq(1, :);
-xmesh = Zq;
+zmesh = Zq;
 ymesh = Yq;
-save('u_stat.mat', 'xmesh', 'X', 'ymesh', 'Y', 'U_t', 'V_t', 'W_t', 'uv_t', 'uw_t', 'vw_t', 'u_rms', 'v_rms', 'w_rms', 'TKE');
-save('u4pxx.mat', 'xmesh', 'X', 'ymesh', 'Y', 'U_t', 'V_t', 'u_pri', 'v_pri');
+save('u_stat.mat', 'zmesh', 'Z', 'ymesh', 'Y', 'U_t', 'V_t', 'W_t', 'uv_t', 'uw_t', 'vw_t', 'u_rms', 'v_rms', 'w_rms', 'TKE');
+save('u4pxx.mat', 'zmesh', 'Z', 'ymesh', 'Y', 'U_t', 'V_t', 'u_pri', 'v_pri');
