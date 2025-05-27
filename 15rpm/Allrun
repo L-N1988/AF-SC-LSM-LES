@@ -6,7 +6,7 @@ cd "${0%/*}" || exit                                # Run from this directory
 # settings
 
     # flag to enable computations in parallel mode
-    parallel=false
+    parallel=true
 
 
 #------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ then
 
     runApplication blockMesh
 
-    # runApplication renumberMesh -overwrite -constant
+    runApplication renumberMesh -overwrite -constant
 
     runApplication checkMesh -allTopology -allGeometry -constant
 
