@@ -35,7 +35,7 @@ boundaryField
         type            rotatingWallVelocity;
         origin          (0 0 0);
         axis            (0 1 0);
-        omega           1;
+        omega           1; // [rad/s], velocity = radius * omega
     }
 }
 
