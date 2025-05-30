@@ -1,0 +1,81 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2112                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     pimpleFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         600;
+
+deltaT           0.01; // Large time step for after hot start case initial conditions
+
+writeControl    timeStep;
+
+writeInterval   200;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable true;
+
+functions
+{
+    velocityPlaneX0
+    {
+        type            surfaces;
+        libs ("libsampling.so");
+        enabled         true;
+
+        // Use writeControl instead of outputControl
+        writeControl    timeStep;
+        writeInterval   1;  // Every time step
+
+        surfaceFormat   raw;  // vtk or raw, foam, etc.
+        fields   (U);
+
+        surfaces
+        {
+            x0Plane
+            {
+                type            cuttingPlane;
+                planeType       planeEquation;
+                planeEquationDict
+                {
+                    a  1; // x=0 plane
+                    b  0;
+                    c  0; // to create plane with normal towards +z direction ...
+                    d  0; // ... at coordinate: z = 2
+                }
+            }
+        };
+
+        interpolate     true;
+    }
+}
+// ************************************************************************* //

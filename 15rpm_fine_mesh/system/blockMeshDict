@@ -1,0 +1,104 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      blockMeshDict;
+}
+
+/* blockMeshDict for a 30-degree annular flume sector with depth in y-direction */
+// vertical direction along y axis
+// convertToMeters 1;
+scale 1;
+
+innerRadius     0.30;                                   // Inner radius (m)
+outerRadius     0.35;                                   // Outer radius (m)
+depth           0.05;                                  // Vertical depth of the flume (m)
+angleDegrees    5;                                    // Half degree of cylinder
+cosAngle        #eval{ cos(degToRad($angleDegrees)) }; // cos
+sinAngle        #eval{ sin(degToRad($angleDegrees)) }; // sin
+
+// Precompute vertex coordinates - swapped x <-> z
+innerZ  #eval{ $innerRadius * $cosAngle };  // z-coordinate of Point 2
+innerX  #eval{ $innerRadius * $sinAngle };  // x-coordinate of Point 2
+outerZ  #eval{ $outerRadius * $cosAngle };  // z-coordinate of Point 3
+outerX  #eval{ $outerRadius * $sinAngle };  // x-coordinate of Point 3
+
+neginnerZ  #eval{ -1 * $innerRadius * $cosAngle };  // z-coordinate of Point 2
+neginnerX  #eval{ -1 * $innerRadius * $sinAngle };  // x-coordinate of Point 2
+negouterZ  #eval{ -1 * $outerRadius * $cosAngle };  // z-coordinate of Point 3
+negouterX  #eval{ -1 * $outerRadius * $sinAngle };  // x-coordinate of Point 3
+
+vertices
+(
+    ($neginnerX 0 $innerZ)      // Point 0: Inner front bottom
+    ($negouterX 0 $outerZ)      // Point 1: Outer front bottom
+    ($innerX 0 $innerZ)       // Point 2: Inner front bottom
+    ($outerX 0 $outerZ)       // Point 3: Outer front bottom
+    ($neginnerX $depth $innerZ) // Point 4: Inner front bottom
+    ($negouterX $depth $outerZ) // Point 5: Outer front bottom
+    ($innerX $depth $innerZ)  // Point 6: Inner front bottom
+    ($outerX $depth $outerZ)  // Point 7: Outer front bottom
+);
+
+edges
+(
+    arc 0 2 (0 0 $innerRadius)      // Inner arc (bottom, x-z plane)
+    arc 1 3 (0 0 $outerRadius)      // Outer arc (bottom, x-z plane)
+    arc 4 6 (0 $depth $innerRadius) // Inner arc (top, x-z plane at y = 0.15)
+    arc 5 7 (0 $depth $outerRadius) // Outer arc (top, x-z plane at y = 0.15)
+);
+
+blocks
+(
+    hex (0 2 6 4 1 3 7 5) (50 50 50) simpleGrading (1 1 1)
+);
+
+boundary
+(
+    innerWall
+    {
+        type wall;
+        faces
+        (
+            (0 4 6 2)
+        );
+    }
+    outerWall
+    {
+        type wall;
+        faces
+        (
+            (1 3 7 5)
+        );
+    }
+    bottomWall
+    {
+        type wall;
+        faces
+        (
+            (0 2 3 1)
+        );
+    }
+    topWall
+    {
+        type wall;
+        faces
+        (
+            (4 5 7 6)
+        );
+    }
+    inlet
+    {
+        type            cyclic;
+        neighbourPatch  outlet;
+        faces           ((0 1 5 4));
+    }
+    outlet
+    {
+        type            cyclic;
+        neighbourPatch  inlet;
+        faces           ((2 6 7 3));
+    }
+);
